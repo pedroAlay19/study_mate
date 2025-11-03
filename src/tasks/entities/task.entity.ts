@@ -1,6 +1,20 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { Subject } from '../../subjects/entities/subject.entity';
 
+export enum TaskState {
+    PENDING = 'pending',           // Por hacer
+    IN_PROGRESS = 'in_progress',   // En progreso
+    COMPLETED = 'completed',       // Completada
+    CANCELLED = 'cancelled'        // Cancelada
+}
+
+export enum TaskPriority {
+    LOW = 'low',        // Baja
+    MEDIUM = 'medium',  // Media
+    HIGH = 'high',      // Alta
+    URGENT = 'urgent'   // Urgente
+}
+
 @Entity('tasks')
 export class Task {
     @PrimaryGeneratedColumn('uuid')
@@ -24,9 +38,17 @@ export class Task {
     @Column()
     delivery_date: Date;
 
-    @Column()
-    priority: string;
+    @Column({
+        type: 'enum',
+        enum: TaskPriority,
+        default: TaskPriority.MEDIUM
+    })
+    priority: TaskPriority;
 
-    @Column()
-    state: string;
+    @Column({
+        type: 'enum',
+        enum: TaskState,
+        default: TaskState.PENDING
+    })
+    state: TaskState;
 }
