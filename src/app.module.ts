@@ -8,6 +8,7 @@ import { AlertsModule } from './alerts/alerts.module';
 import { AttachmentsModule } from './attachments/attachments.module';
 import { SupabaseModule } from './supabase/supabase.module'; // 🆕
 import { AuthModule } from './auth/auth.module';
+import { PromodoroModule } from './pomodoro/pomodoro.module'; // 🆕
 
 @Module({
   imports: [
@@ -34,7 +35,8 @@ import { AuthModule } from './auth/auth.module';
     AlertsModule,
     AttachmentsModule,
     SupabaseModule,
-    AuthModule, // 🆕 Agregar módulo de Supabase
+    AuthModule,
+    PromodoroModule, // 🆕 Módulo Pomodoro
   ],
 })
 export class AppModule {}

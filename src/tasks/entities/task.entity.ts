@@ -68,4 +68,11 @@ export class Task {
     cascade: true,
   })
   attachments: Attachment[];
+
+  @OneToMany(() => PromodoroSession, (session) => session.task, {
+    cascade: true,
+  })
+  pomodoroSessions: PromodoroSession[];
 }
+
+import { PromodoroSession } from '../../pomodoro/entities/pomodoro-session.entity';
