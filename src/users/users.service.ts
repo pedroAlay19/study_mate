@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
@@ -8,6 +9,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Student } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import { UpdateStudentsDto } from './dto/update-user.dto';
+import * as bcrypt from 'bcrypt';
+
 
 @Injectable()
 export class UsersService {
@@ -22,7 +25,11 @@ export class UsersService {
     if (studentExists)
       throw new ConflictException(`Student with email ${email} already exists`);
 
-    const student = this.studentRepository.create(createStudentDto);
+    const student = this.studentRepository.create({
+      ...createStudentDto,
+      password: await bcrypt.hash(createStudentDto.password, 10),
+    
+    });
     return await this.studentRepository.save(student);
   }
 
@@ -37,6 +44,14 @@ export class UsersService {
     if (!studentFound)
       throw new NotFoundException(`Student with ID ${id} not found`);
     return studentFound;
+  }
+
+  async findByEmail(email: string): Promise<Student | null> {
+    const user = await this.studentRepository.findOneBy({ email });
+    if (!user) {
+      throw new BadRequestException('User with email not found');
+    }
+    return user;
   }
 
   async update(
