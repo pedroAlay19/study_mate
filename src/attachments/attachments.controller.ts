@@ -11,6 +11,8 @@ import {
   UseInterceptors,
   UploadedFile,
   BadRequestException,
+  UseGuards,
+  
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -18,8 +20,12 @@ import { extname } from 'path';
 import { AttachmentsService } from './attachments.service';
 import { CreateAttachmentDto } from './dto/create-attachment.dto';
 import { UpdateAttachmentDto } from './dto/update-attachment.dto';
+import { AuthGuard } from '../auth/guard/auth.guard';
+import { ActiveUser } from '../auth/decorators/active-user.decorator';
+import type { UserPayload } from '../auth/interfaces/user.interface';
 
 @Controller('attachments')
+@UseGuards(AuthGuard) // 🔐 Proteger todo el controlador
 export class AttachmentsController {
   constructor(private readonly attachmentsService: AttachmentsService) {}
   //Enddpoint de subida de archivos
@@ -57,10 +63,13 @@ export class AttachmentsController {
   async uploadFile(
     @Param('taskId') taskId: string,
     @UploadedFile() file: Express.Multer.File,
+    @ActiveUser() user: UserPayload, // 🔐 Usuario autenticado
   ) {
     if (!file) {
       throw new BadRequestException('No file uploaded');
     }
+
+    console.log(`User ${user.email} uploading file to task ${taskId}`);
 
     // Crear el DTO con la información del archivo
     const createAttachmentDto: CreateAttachmentDto = {
@@ -100,10 +109,13 @@ export class AttachmentsController {
   async uploadToSupabase(
     @Param('taskId') taskId: string,
     @UploadedFile() file: Express.Multer.File,
+    @ActiveUser() user: UserPayload, // 🔐 Usuario autenticado
   ) {
     if (!file) {
       throw new BadRequestException('No file uploaded');
     }
+
+    console.log(`User ${user.email} uploading to Supabase - task ${taskId}`);
 
     // Llamar al servicio que sube a Supabase
     return await this.attachmentsService.uploadToSupabase(file, taskId);
@@ -112,22 +124,33 @@ export class AttachmentsController {
   // Endpoint original para crear attachment manualmente (sin archivo físico)
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  create(@Body() createAttachmentDto: CreateAttachmentDto) {
+  create(
+    @Body() createAttachmentDto: CreateAttachmentDto,
+    @ActiveUser() user: UserPayload,
+  ) {
+    console.log(`User ${user.email} creating attachment`);
     return this.attachmentsService.create(createAttachmentDto);
   }
 
   @Get()
-  findAll() {
+  findAll(@ActiveUser() user: UserPayload) {
+    console.log(`User ${user.email} fetching all attachments`);
     return this.attachmentsService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  findOne(
+    @Param('id') id: string,
+    @ActiveUser() user: UserPayload,
+  ) {
     return this.attachmentsService.findOne(id);
   }
 
   @Get('task/:taskId')
-  findByTask(@Param('taskId') taskId: string) {
+  findByTask(
+    @Param('taskId') taskId: string,
+    @ActiveUser() user: UserPayload,
+  ) {
     return this.attachmentsService.findByTask(taskId);
   }
 
@@ -135,13 +158,19 @@ export class AttachmentsController {
   update(
     @Param('id') id: string,
     @Body() updateAttachmentDto: UpdateAttachmentDto,
+    @ActiveUser() user: UserPayload,
   ) {
+    console.log(`User ${user.email} updating attachment ${id}`);
     return this.attachmentsService.update(id, updateAttachmentDto);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  remove(@Param('id') id: string) {
+  remove(
+    @Param('id') id: string,
+    @ActiveUser() user: UserPayload,
+  ) {
+    console.log(`User ${user.email} deleting attachment ${id}`);
     return this.attachmentsService.remove(id);
   }
 }
