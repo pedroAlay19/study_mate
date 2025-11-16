@@ -3,6 +3,8 @@ import { TasksService } from './tasks.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { AuthGuard } from '../auth/guard/auth.guard';
+import { ActiveUser } from 'src/auth/decorators/active-user.decorator';
+import type{ JwtPayload } from '@supabase/supabase-js';
 
 @UseGuards(AuthGuard)
 @Controller('tasks')
@@ -16,8 +18,8 @@ export class TasksController {
   }
 
   @Get()
-  findAll() {
-    return this.tasksService.findAll();
+  findAll(@ActiveUser() user: JwtPayload) {
+    return this.tasksService.findAll(user);
   }
 
   @Get('subject/:subjectId')

@@ -23,8 +23,8 @@ export class AlertsService {
 
     const alertDayStart = dayjs().add(2, 'day').startOf('day').toDate();
     const alertDayEnd = dayjs().add(2, 'day').endOf('day').toDate();
-    console.log(alertDayStart)
-    console.log(alertDayEnd)
+    console.log(alertDayStart);
+    console.log(alertDayEnd);
 
     const tasks = await this.tasksService.findByAlertRange(
       alertDayStart,
@@ -43,5 +43,11 @@ export class AlertsService {
       });
       this.logger.log(`Notification created for task ${task.title}`);
     }
+  }
+
+  findAlertsByUserId(userId: string) {
+    return this.alertsRepository.find({
+      where: { task: { subject: { student: { studentId: userId } } } },
+    });
   }
 }

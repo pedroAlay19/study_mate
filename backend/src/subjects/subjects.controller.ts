@@ -13,7 +13,7 @@ import { CreateSubjectDto } from './dto/create-subject.dto';
 import { UpdateSubjectDto } from './dto/update-subject.dto';
 import { AuthGuard } from '../auth/guard/auth.guard';
 import { ActiveUser } from '../auth/decorators/active-user.decorator';
-import type{ RequestUser } from 'src/auth/interfaces/request-user.interface';
+import type{ JwtPayload } from '@supabase/supabase-js';
 
 @UseGuards(AuthGuard)
 @Controller('subjects')
@@ -21,13 +21,13 @@ export class SubjectsController {
   constructor(private readonly subjectsService: SubjectsService) {}
 
   @Post()
-  create(@Body() createSubjectDto: CreateSubjectDto, @ActiveUser() user: RequestUser) {
+  create(@Body() createSubjectDto: CreateSubjectDto, @ActiveUser() user: JwtPayload) {
     return this.subjectsService.create(createSubjectDto, user);
   }
 
   @Get()
-  findAll() {
-    return this.subjectsService.findAll();
+  findAll(@ActiveUser() user: JwtPayload) {
+    return this.subjectsService.findAll(user);
   }
 
   @Get(':id')

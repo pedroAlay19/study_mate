@@ -5,7 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Subject } from './entities/subject.entity';
 import { UsersService } from 'src/users/users.service';
-import { RequestUser } from 'src/auth/interfaces/request-user.interface';
+import { JwtPayload } from '@supabase/supabase-js';
 
 @Injectable()
 export class SubjectsService {
@@ -15,8 +15,8 @@ export class SubjectsService {
 
     private readonly studentsService: UsersService,
   ) {}
-  async create(createSubjectDto: CreateSubjectDto, user: RequestUser) {
-    const student = await this.studentsService.findOne(user.user.sub);
+  async create(createSubjectDto: CreateSubjectDto, user: JwtPayload) {
+    const student = await this.studentsService.findOne(user.sub);
     const subject = this.subjectsRepository.create({
       ...createSubjectDto,
       student,
@@ -24,8 +24,10 @@ export class SubjectsService {
     return await this.subjectsRepository.save(subject);
   }
 
-  async findAll(): Promise<Subject[]> {
-    return await this.subjectsRepository.find();
+  async findAll(user: JwtPayload): Promise<Subject[]> {
+    return await this.subjectsRepository.find({
+      where: { student: { studentId: user.sub } },
+    });
   }
 
   async findOne(id: string): Promise<Subject> {

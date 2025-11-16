@@ -5,6 +5,7 @@ import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { Task } from './entities/task.entity';
 import { Subject } from '../subjects/entities/subject.entity';
+import { JwtPayload } from '@supabase/supabase-js';
 
 @Injectable()
 export class TasksService {
@@ -46,8 +47,9 @@ export class TasksService {
     return await this.taskRepository.save(task);
   }
 
-  async findAll(): Promise<Task[]> {
+  async findAll(user: JwtPayload): Promise<Task[]> {
     return await this.taskRepository.find({
+      where: { subject: { student: { studentId: user.sub } } },
       relations: ['subject'],
     });
   }
