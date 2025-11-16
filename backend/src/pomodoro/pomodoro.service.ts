@@ -34,9 +34,19 @@ export class PromodoroService {
     return await this.pomodoroRepository.save(session);
   }
 
-  async findAll(): Promise<PromodoroSession[]> {
+  async findAll(userId: string): Promise<PromodoroSession[]> {
     return await this.pomodoroRepository.find({
-      relations: ['task'],
+      relations: ['task', 'task.subject', 'task.subject.student'],
+      where: {
+        task: {
+          subject: {
+            student: {
+              studentId: userId,
+            },
+          },
+        },
+      },
+      order: { start_session: 'DESC' },
     });
   }
 
@@ -53,12 +63,18 @@ export class PromodoroService {
     return session;
   }
 
-  async findByTask(taskId: string): Promise<PromodoroSession[]> {
+  async findByTask(taskId: string, userId: string): Promise<PromodoroSession[]> {
     const task = await this.taskRepository.findOne({
       where: { task_id: taskId },
+      relations: ['subject', 'subject.student'],
     });
 
     if (!task) {
+      throw new NotFoundException(`Task with ID ${taskId} not found`);
+    }
+
+    // Verificar que la tarea pertenece al estudiante autenticado
+    if (task.subject.student.studentId !== userId) {
       throw new NotFoundException(`Task with ID ${taskId} not found`);
     }
 
@@ -93,8 +109,8 @@ export class PromodoroService {
   }
 
   //Estadisticas por tarea
-  async getStatsByTask(taskId: string) {
-    const sessions = await this.findByTask(taskId);
+  async getStatsByTask(taskId: string, userId: string) {
+    const sessions = await this.findByTask(taskId, userId);
 
     const totalSessions = sessions.length;
     const completedSessions = sessions.filter((s) => s.completed).length;

@@ -35,7 +35,7 @@ export class PromodoroController {
   @Get()
   findAll(@ActiveUser() user: UserPayload) {
     console.log(`User ${user.email} fetching all Pomodoro sessions`);
-    return this.pomodoroService.findAll();
+    return this.pomodoroService.findAll(user.sub);
   }
 
   @Get(':id')
@@ -51,7 +51,7 @@ export class PromodoroController {
     @ActiveUser() user: UserPayload,
   ) {
     console.log(`User ${user.email} fetching Pomodoro sessions for task ${taskId}`);
-    return this.pomodoroService.findByTask(taskId);
+    return this.pomodoroService.findByTask(taskId, user.sub);
   }
 
   @Get('stats/:taskId')
@@ -60,7 +60,7 @@ export class PromodoroController {
     @ActiveUser() user: UserPayload,
   ) {
     console.log(`User ${user.email} fetching Pomodoro stats for task ${taskId}`);
-    return this.pomodoroService.getStatsByTask(taskId);
+    return this.pomodoroService.getStatsByTask(taskId, user.sub);
   }
 
   @Patch(':id')
