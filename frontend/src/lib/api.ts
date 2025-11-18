@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 export const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3007',
+  baseURL: import.meta.env.VITE_API_URL
 });
 
 // Interceptor para agregar token automáticamente a todas las peticiones
