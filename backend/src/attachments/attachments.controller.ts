@@ -25,7 +25,7 @@ import { ActiveUser } from '../auth/decorators/active-user.decorator';
 import type { UserPayload } from '../auth/interfaces/user.interface';
 
 @Controller('attachments')
-@UseGuards(AuthGuard) //Proteger todo el controlador
+@UseGuards(AuthGuard) // 🔐 Proteger todo el controlador
 export class AttachmentsController {
   constructor(private readonly attachmentsService: AttachmentsService) {}
   //Endpoint para subir archivos a SUPABASE (en la nube)
@@ -65,7 +65,7 @@ export class AttachmentsController {
     return await this.attachmentsService.uploadToSupabase(file, taskId);
   }
 
-  // Endpoint original para crear attachment manualmente (sin archivo físico)
+  // Endpoint original para crear attachment manualmente
   @Post()
   @HttpCode(HttpStatus.CREATED)
   create(
