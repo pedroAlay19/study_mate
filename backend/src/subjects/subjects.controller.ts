@@ -6,17 +6,18 @@ import {
   Patch,
   Param,
   Delete,
-  UseGuards,
 } from '@nestjs/common';
 import { SubjectsService } from './subjects.service';
 import { CreateSubjectDto } from './dto/create-subject.dto';
 import { UpdateSubjectDto } from './dto/update-subject.dto';
-import { AuthGuard } from '../auth/guard/auth.guard';
 import { ActiveUser } from '../auth/decorators/active-user.decorator';
 import type{ JwtPayload } from '@supabase/supabase-js';
+import { UserRole } from '../users/entities/user.role';
+import { Auth } from '../auth/decorators/auth.decorator';
 
-@UseGuards(AuthGuard)
+
 @Controller('subjects')
+@Auth(UserRole.STUDENT)
 export class SubjectsController {
   constructor(private readonly subjectsService: SubjectsService) {}
 

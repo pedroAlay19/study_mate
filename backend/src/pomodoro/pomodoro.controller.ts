@@ -16,8 +16,11 @@ import { UpdatePromodoroSessionDto } from './dto/update-pomodoro-session.dto';
 import { AuthGuard } from '../auth/guard/auth.guard';
 import { ActiveUser } from '../auth/decorators/active-user.decorator';
 import type { UserPayload } from '../auth/interfaces/user.interface';
+import { UserRole } from '../users/entities/user.role';
+import { Auth } from '../auth/decorators/auth.decorator';
 
 @Controller('pomodoro')
+@Auth(UserRole.STUDENT)
 @UseGuards(AuthGuard) 
 export class PromodoroController {
   constructor(private readonly pomodoroService: PromodoroService) {}

@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { CreateStudentDto } from 'src/users/dto/create-user.dto';
 import { UsersService } from '../users/users.service';
 import { LoginDto } from './dto/login.dto';
@@ -16,9 +16,15 @@ export class AuthService {
     return await this.userService.create(registerDto);
   }
 
-  async login(loginDto: LoginDto): Promise<{ access_token: string; user: { studentId: string; name: string; email: string } }>{
+  async login(
+    loginDto: LoginDto,
+  ): Promise<{
+    access_token: string;
+    user: { studentId: string; name: string; email: string };
+  }> {
     const user = await this.userService.findByEmail(loginDto.email);
     if (!user) throw new UnauthorizedException('email is wrong');
+    if (!user.active) throw new ForbiddenException('User account is inactive');
 
     const isPasswordValid = await bcrypt.compare(
       loginDto.password,
@@ -26,7 +32,11 @@ export class AuthService {
     );
     if (!isPasswordValid) throw new UnauthorizedException('password is wrong');
 
-    const payload: UserPayload = { sub: user.studentId, email: user.email };
+    const payload: UserPayload = {
+      sub: user.studentId,
+      email: user.email,
+      role: user.role,
+    };
     return {
       access_token: await this.jwtService.signAsync(payload),
       user: {
@@ -40,9 +50,6 @@ export class AuthService {
   async getProfile(userId: string) {
     const user = await this.userService.findOne(userId);
     if (!user) throw new UnauthorizedException('User not found');
-    
-    // Retornar solo la información necesaria (sin la contraseña)
-    const { password, ...userProfile } = user;
-    return userProfile;
+    return user;
   }
 }

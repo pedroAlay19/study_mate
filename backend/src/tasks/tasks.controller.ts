@@ -1,13 +1,14 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus } from '@nestjs/common';
 import { TasksService } from './tasks.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
-import { AuthGuard } from '../auth/guard/auth.guard';
-import { ActiveUser } from 'src/auth/decorators/active-user.decorator';
+import { ActiveUser } from '../auth/decorators/active-user.decorator';
 import type{ JwtPayload } from '@supabase/supabase-js';
+import { UserRole } from '../users/entities/user.role';
+import { Auth } from '../auth/decorators/auth.decorator';
 
-@UseGuards(AuthGuard)
 @Controller('tasks')
+@Auth(UserRole.STUDENT)
 export class TasksController {
   constructor(private readonly tasksService: TasksService) {}
 

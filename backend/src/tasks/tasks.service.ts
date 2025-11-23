@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, Inject, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Between, Repository } from 'typeorm';
 import { CreateTaskDto } from './dto/create-task.dto';
@@ -6,6 +6,8 @@ import { UpdateTaskDto } from './dto/update-task.dto';
 import { Task } from './entities/task.entity';
 import { Subject } from '../subjects/entities/subject.entity';
 import { JwtPayload } from '@supabase/supabase-js';
+import { AlertsService } from '../alerts/alerts.service';
+
 
 @Injectable()
 export class TasksService {
@@ -14,6 +16,9 @@ export class TasksService {
     private readonly taskRepository: Repository<Task>,
     @InjectRepository(Subject)
     private readonly subjectRepository: Repository<Subject>,
+
+    @Inject(forwardRef(() => AlertsService))
+    private readonly alertsService: AlertsService,
   ) {}
 
   async create(createTaskDto: CreateTaskDto): Promise<Task> {
@@ -47,13 +52,15 @@ export class TasksService {
       throw new BadRequestException('Delivery date must be equal to or after start date');
     }
 
-    const task = this.taskRepository.create({
+    let task = this.taskRepository.create({
       ...createTaskDto,
       subjectId: createTaskDto.subjectId,
       subject 
     });
 
-    return await this.taskRepository.save(task);
+    task = await this.taskRepository.save(task);
+    await this.alertsService.generateAlertForTask(task);
+    return task;
   }
 
   async findAll(user: JwtPayload): Promise<Task[]> {
@@ -125,4 +132,7 @@ export class TasksService {
     const task = await this.findOne(id);
     await this.taskRepository.remove(task);
   }
+
+  
+
 }

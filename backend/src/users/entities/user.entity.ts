@@ -6,8 +6,9 @@ import {
   OneToMany,
 } from 'typeorm';
 import { Subject } from '../../subjects/entities/subject.entity';
+import { UserRole } from './user.role';
 
-@Entity('students')
+@Entity('users')
 export class Student {
   @PrimaryGeneratedColumn('uuid')
   studentId: string;
@@ -17,6 +18,12 @@ export class Student {
 
   @Column({ unique: true })
   email: string;
+
+  @Column({type: 'enum', enum: UserRole, default: UserRole.STUDENT, nullable: true})
+  role: UserRole
+
+  @Column({ default: true })
+  active: boolean;
 
   @Column()
   password: string;

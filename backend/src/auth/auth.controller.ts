@@ -3,7 +3,6 @@ import { AuthService } from './auth.service';
 import { CreateStudentDto } from 'src/users/dto/create-user.dto';
 import { LoginDto } from './dto/login.dto';
 import { AuthGuard } from './guard/auth.guard';
-import type{ RequestUser } from './interfaces/request-user.interface';
 import { ActiveUser } from './decorators/active-user.decorator';
 import type { UserPayload } from './interfaces/user.interface';
 

@@ -1,10 +1,11 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { Repository } from 'typeorm';
 import { Alert } from './entities/alert.entity';
 import { TasksService } from 'src/tasks/tasks.service';
 import dayjs from 'dayjs';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Task } from '../tasks/entities/task.entity';
 
 @Injectable()
 export class AlertsService {
@@ -14,6 +15,7 @@ export class AlertsService {
     @InjectRepository(Alert)
     private readonly alertsRepository: Repository<Alert>,
 
+    @Inject(forwardRef(() => TasksService)) 
     private readonly tasksService: TasksService,
   ) {}
 
@@ -21,7 +23,7 @@ export class AlertsService {
   async create() {
     this.logger.log('Revisando tareas próximas a vencer...');
 
-    const alertDayStart = dayjs().add(2, 'day').startOf('day').toDate();
+    const alertDayStart = dayjs().toDate();
     const alertDayEnd = dayjs().add(2, 'day').endOf('day').toDate();
     console.log(alertDayStart);
     console.log(alertDayEnd);
@@ -39,7 +41,7 @@ export class AlertsService {
       await this.alertsRepository.insert({
         task: task,
         alertDate: alertDayStart,
-        message: `The task "${task.title}" is due in 3 days.`,
+        message: `The task "${task.title}" is due in 2 days.`,
       });
       this.logger.log(`Notification created for task ${task.title}`);
     }
@@ -49,5 +51,19 @@ export class AlertsService {
     return this.alertsRepository.find({
       where: { task: { subject: { student: { studentId: userId } } } },
     });
+  }
+
+  async generateAlertForTask(task: Task) {
+    const today = dayjs();
+    const delivery = dayjs(task.delivery_date);
+
+    // Si la fecha de entrega está dentro de los próximos 2 días, generar alerta
+    if (delivery.diff(today, 'day') <= 2 && delivery.diff(today, 'day') >= 0) {
+      await this.alertsRepository.insert({
+        task: task,
+        alertDate: today,
+        message: `The task "${task.title}" is due in 2 days.`,
+      });
+    }
   }
 }
