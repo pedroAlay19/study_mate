@@ -18,26 +18,22 @@ export const useAuth = () => {
       try {
         const token = localStorage.getItem('access_token');
         if (!token) {
+          setUser(null);
           setLoading(false);
           return;
         }
 
-        // Intentar obtener del localStorage primero
-        const savedUser = localStorage.getItem('user');
-        if (savedUser) {
-          setUser(JSON.parse(savedUser));
-          setLoading(false);
-          return;
-        }
-
-        // Si no está en localStorage, obtener del servidor
+        // SIEMPRE validar con el servidor para asegurar que el token es válido
         const { data } = await api.get('/auth/profile');
         setUser(data);
+        // Actualizar localStorage con los datos más recientes
         localStorage.setItem('user', JSON.stringify(data));
       } catch (error) {
         console.error('Error fetching user:', error);
+        // Si falla la validación, limpiar todo
         localStorage.removeItem('access_token');
         localStorage.removeItem('user');
+        setUser(null);
       } finally {
         setLoading(false);
       }

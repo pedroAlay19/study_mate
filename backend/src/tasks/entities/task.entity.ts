@@ -28,6 +28,9 @@ export class Task {
   @PrimaryGeneratedColumn('uuid')
   task_id: string;
 
+  @Column()
+  subjectId: string;
+
   @ManyToOne(() => Subject, (subject) => subject.tasks, {
     onDelete: 'CASCADE',
   })

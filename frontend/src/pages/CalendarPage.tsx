@@ -31,6 +31,12 @@ export default function CalendarPage() {
   const { data: tasks = [], isLoading: loadingTasks } = useTasks();
   const { data: subjects = [], isLoading: loadingSubjects } = useSubjects();
 
+  // Función para parsear fecha en zona horaria local (evita problema de UTC)
+  const parseLocalDate = (dateString: string): Date => {
+    const [year, month, day] = dateString.split('-').map(Number);
+    return new Date(year, month - 1, day);
+  };
+
   // Filtrar tareas
   const filteredTasks = tasks.filter((task) => {
     if (task.state === TaskStateEnum.COMPLETED || task.state === TaskStateEnum.CANCELLED) {
@@ -134,7 +140,7 @@ export default function CalendarPage() {
                 <input
                   type="date"
                   value={date ? format(date, "yyyy-MM-dd") : ""}
-                  onChange={(e) => setDate(e.target.value ? new Date(e.target.value) : undefined)}
+                  onChange={(e) => setDate(e.target.value ? parseLocalDate(e.target.value) : undefined)}
                   className="px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                 />
               </div>

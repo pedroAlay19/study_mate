@@ -57,26 +57,30 @@ export function TaskForm({ open, onOpenChange, onSubmit, task, isLoading }: Task
   const selectedState = watch("state");
 
   useEffect(() => {
-    if (open && task) {
-      reset({
-        title: task.title,
-        description: task.description,
-        subjectId: task.subjectId,
-        start_date: task.start_date.split('T')[0],
-        delivery_date: task.delivery_date.split('T')[0],
-        priority: task.priority,
-        state: task.state,
-      });
-    } else if (open && !task) {
-      reset({
-        title: "",
-        description: "",
-        subjectId: "",
-        start_date: new Date().toISOString().split('T')[0],
-        delivery_date: new Date().toISOString().split('T')[0],
-        priority: TaskPriorityEnum.MEDIUM,
-        state: TaskStateEnum.PENDING,
-      });
+    if (open) {
+      if (task) {
+        // Modo edición: cargar datos de la tarea
+        reset({
+          title: task.title,
+          description: task.description,
+          subjectId: task.subjectId || task.subject?.subjectId || "",
+          start_date: task.start_date.split('T')[0],
+          delivery_date: task.delivery_date.split('T')[0],
+          priority: task.priority,
+          state: task.state,
+        });
+      } else {
+        // Modo creación: resetear a valores por defecto
+        reset({
+          title: "",
+          description: "",
+          subjectId: "",
+          start_date: new Date().toISOString().split('T')[0],
+          delivery_date: new Date().toISOString().split('T')[0],
+          priority: TaskPriorityEnum.MEDIUM,
+          state: TaskStateEnum.PENDING,
+        });
+      }
     }
   }, [open, task, reset]);
 
