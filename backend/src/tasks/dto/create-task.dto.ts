@@ -9,12 +9,12 @@ export class IsAfterStartDate implements ValidatorConstraintInterface {
     
     // Manejar tanto strings como Dates
     const startDate = typeof obj.start_date === 'string' 
-      ? new Date(obj.start_date + 'T00:00:00') 
+      ? new Date(obj.start_date) 
       : new Date(obj.start_date);
     startDate.setHours(0, 0, 0, 0);
     
     const deliveryDate = typeof delivery_date === 'string'
-      ? new Date(delivery_date + 'T00:00:00')
+      ? new Date(delivery_date)
       : new Date(delivery_date);
     deliveryDate.setHours(0, 0, 0, 0);
     
@@ -34,7 +34,7 @@ export class IsNotPastDate implements ValidatorConstraintInterface {
     today.setHours(0, 0, 0, 0); 
     
     // Si llega como string (formato ISO), crear Date desde el string
-    const inputDate = typeof date === 'string' ? new Date(date + 'T00:00:00') : new Date(date);
+    const inputDate = typeof date === 'string' ? new Date(date) : new Date(date);
     inputDate.setHours(0, 0, 0, 0);
     
     // Permite fecha de hoy o futuras

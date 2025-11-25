@@ -88,7 +88,13 @@ export function TaskForm({ open, onOpenChange, onSubmit, task, isLoading }: Task
   }, [open, task, reset]);
 
   const handleFormSubmit = (data: CreateTaskDto) => {
-    onSubmit(data);
+    // Agregar la hora para evitar problemas de zona horaria
+    const submitData = {
+      ...data,
+      start_date: data.start_date + 'T00:00:00',
+      delivery_date: data.delivery_date + 'T00:00:00',
+    };
+    onSubmit(submitData);
   };
 
   const priorityLabels: Record<TaskPriority, { label: string; color: string }> = {
