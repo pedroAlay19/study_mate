@@ -8,14 +8,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Play, Pause, RotateCcw, Coffee, BookOpen, CheckCircle2 } from "lucide-react";
+import { Play, Pause, RotateCcw, Coffee, BookOpen, CheckCircle2, Settings } from "lucide-react";
 import { useTasks } from "@/hooks/useTasks";
 import { usePomodoroSessions } from "@/hooks/usePomodoro";
 import { usePomodoro } from "@/contexts/PomodoroContext";
+import { PomodoroSettings } from "@/components/PomodoroSettings";
+import { useState } from "react";
 
 export default function Pomodoro() {
   const { data: tasks = [] } = useTasks();
   const { data: sessions = [] } = usePomodoroSessions();
+  const [settingsOpen, setSettingsOpen] = useState(false);
   
   const {
     minutes,
@@ -24,19 +27,35 @@ export default function Pomodoro() {
     isBreak,
     completedPomodoros,
     selectedTaskId,
+    workTime,
+    breakTime,
     setSelectedTaskId,
     toggleTimer,
     resetTimer,
     formatTime,
     progress,
+    updateSettings,
   } = usePomodoro();
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       <div className="text-center">
-        <h1 className="text-3xl font-bold text-foreground mb-2">Técnica Pomodoro</h1>
+        <div className="flex items-center justify-center gap-4 mb-2">
+          <h1 className="text-3xl font-bold text-foreground">Técnica Pomodoro</h1>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setSettingsOpen(true)}
+            title="Configurar tiempos"
+          >
+            <Settings className="w-4 h-4" />
+          </Button>
+        </div>
         <p className="text-muted-foreground">
           Aumenta tu concentración con intervalos de trabajo enfocado
+        </p>
+        <p className="text-xs text-muted-foreground mt-1">
+          Configuración actual: {workTime} min trabajo • {breakTime} min descanso
         </p>
       </div>
 
@@ -201,12 +220,24 @@ export default function Pomodoro() {
         <CardContent className="space-y-2 text-muted-foreground">
           <p>La técnica Pomodoro es un método de gestión del tiempo que consiste en:</p>
           <ul className="list-disc list-inside space-y-1 ml-4">
-            <li>25 minutos de trabajo concentrado</li>
-            <li>5 minutos de descanso</li>
+            <li>{workTime} minutos de trabajo concentrado</li>
+            <li>{breakTime} minutos de descanso</li>
             <li>Después de 4 pomodoros, toma un descanso más largo (15-30 minutos)</li>
           </ul>
+          <p className="text-sm mt-3">
+            💡 Puedes personalizar los tiempos haciendo clic en el botón de configuración ⚙️
+          </p>
         </CardContent>
       </Card>
+
+      {/* Dialog de configuración */}
+      <PomodoroSettings
+        open={settingsOpen}
+        onOpenChange={setSettingsOpen}
+        onSave={updateSettings}
+        currentWorkTime={workTime}
+        currentBreakTime={breakTime}
+      />
     </div>
   );
 }

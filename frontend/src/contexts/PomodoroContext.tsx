@@ -11,6 +11,8 @@ interface PomodoroState {
   completedPomodoros: number;
   selectedTaskId: string;
   currentSessionId: string | null;
+  workTime: number; // en minutos
+  breakTime: number; // en minutos
 }
 
 interface PomodoroContextType extends PomodoroState {
@@ -19,41 +21,68 @@ interface PomodoroContextType extends PomodoroState {
   resetTimer: () => void;
   formatTime: (mins: number, secs: number) => string;
   progress: number;
+  updateSettings: (workTime: number, breakTime: number) => void;
 }
 
 const PomodoroContext = createContext<PomodoroContextType | undefined>(undefined);
 
-const WORK_TIME = 25 * 60;
-const BREAK_TIME = 5 * 60;
 const STORAGE_KEY = 'pomodoro_state';
+const SETTINGS_KEY = 'pomodoro_settings';
+
+// Valores por defecto
+const DEFAULT_WORK_TIME = 25;
+const DEFAULT_BREAK_TIME = 5;
 
 export function PomodoroProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<PomodoroState>(() => {
-    // Intentar recuperar el estado del localStorage
-    const saved = localStorage.getItem(STORAGE_KEY);
+  // Cargar configuración de tiempos desde localStorage
+  const getSettings = () => {
+    const saved = localStorage.getItem(SETTINGS_KEY);
     if (saved) {
       try {
         return JSON.parse(saved);
       } catch {
+        return { workTime: DEFAULT_WORK_TIME, breakTime: DEFAULT_BREAK_TIME };
+      }
+    }
+    return { workTime: DEFAULT_WORK_TIME, breakTime: DEFAULT_BREAK_TIME };
+  };
+
+  const [state, setState] = useState<PomodoroState>(() => {
+    const settings = getSettings();
+    // Intentar recuperar el estado del localStorage
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
         return {
-          minutes: 25,
+          ...parsed,
+          workTime: settings.workTime,
+          breakTime: settings.breakTime,
+        };
+      } catch {
+        return {
+          minutes: settings.workTime,
           seconds: 0,
           isActive: false,
           isBreak: false,
           completedPomodoros: 0,
           selectedTaskId: '',
           currentSessionId: null,
+          workTime: settings.workTime,
+          breakTime: settings.breakTime,
         };
       }
     }
     return {
-      minutes: 25,
+      minutes: settings.workTime,
       seconds: 0,
       isActive: false,
       isBreak: false,
       completedPomodoros: 0,
       selectedTaskId: '',
       currentSessionId: null,
+      workTime: settings.workTime,
+      breakTime: settings.breakTime,
     };
   });
 
@@ -91,7 +120,7 @@ export function PomodoroProvider({ children }: { children: ReactNode }) {
                   ...prev,
                   isActive: false,
                   isBreak: true,
-                  minutes: 5,
+                  minutes: prev.breakTime,
                   seconds: 0,
                   completedPomodoros: prev.completedPomodoros + 1,
                   currentSessionId: null,
@@ -103,7 +132,7 @@ export function PomodoroProvider({ children }: { children: ReactNode }) {
                   ...prev,
                   isActive: false,
                   isBreak: false,
-                  minutes: 25,
+                  minutes: prev.workTime,
                   seconds: 0,
                 };
               }
@@ -135,7 +164,7 @@ export function PomodoroProvider({ children }: { children: ReactNode }) {
       createSession.mutate(
         {
           taskId: state.selectedTaskId,
-          duration_min: 25,
+          duration_min: state.workTime,
           breaks_taken: 0,
           completed: false,
         },
@@ -167,26 +196,42 @@ export function PomodoroProvider({ children }: { children: ReactNode }) {
         },
       });
     }
-    setState({
-      minutes: 25,
+    setState((prev) => ({
+      minutes: prev.workTime,
       seconds: 0,
       isActive: false,
       isBreak: false,
-      completedPomodoros: state.completedPomodoros,
+      completedPomodoros: prev.completedPomodoros,
       selectedTaskId: '',
       currentSessionId: null,
-    });
+      workTime: prev.workTime,
+      breakTime: prev.breakTime,
+    }));
   };
 
   const setSelectedTaskId = (id: string) => {
     setState((prev) => ({ ...prev, selectedTaskId: id }));
   };
 
+  const updateSettings = (workTime: number, breakTime: number) => {
+    // Guardar en localStorage
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify({ workTime, breakTime }));
+    
+    // Actualizar estado
+    setState((prev) => ({
+      ...prev,
+      workTime,
+      breakTime,
+      minutes: prev.isBreak ? breakTime : workTime,
+      seconds: 0,
+    }));
+  };
+
   const formatTime = (mins: number, secs: number) => {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const totalSeconds = state.isBreak ? BREAK_TIME : WORK_TIME;
+  const totalSeconds = state.isBreak ? state.breakTime * 60 : state.workTime * 60;
   const currentSeconds = state.minutes * 60 + state.seconds;
   const progress = ((totalSeconds - currentSeconds) / totalSeconds) * 100;
 
@@ -199,6 +244,7 @@ export function PomodoroProvider({ children }: { children: ReactNode }) {
         resetTimer,
         formatTime,
         progress,
+        updateSettings,
       }}
     >
       {children}
