@@ -22,14 +22,17 @@ export function NotificationBell() {
   const getTimeAgo = (date: string) => {
     const now = new Date();
     const alertDate = new Date(date);
-    const diffInMs = now.getTime() - alertDate.getTime();
-    const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
-    const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
+    const diffInMs = alertDate.getTime() - now.getTime();
+    const diffInDays = Math.abs(Math.floor(diffInMs / (1000 * 60 * 60 * 24)));
+    const diffInHours = Math.abs(Math.floor(diffInMs / (1000 * 60 * 60)));
+    const diffInMinutes = Math.abs(Math.floor(diffInMs / (1000 * 60)));
     
     if (diffInDays > 0) {
       return `Hace ${diffInDays} ${diffInDays === 1 ? 'día' : 'días'}`;
     } else if (diffInHours > 0) {
       return `Hace ${diffInHours} ${diffInHours === 1 ? 'hora' : 'horas'}`;
+    } else if (diffInMinutes > 0) {
+      return `Hace ${diffInMinutes} ${diffInMinutes === 1 ? 'minuto' : 'minutos'}`;
     } else {
       return 'Hace un momento';
     }
@@ -57,6 +60,20 @@ export function NotificationBell() {
   const AlertItem = ({ alert }: { alert: Alert }) => {
     const dueInfo = getDaysUntilDue(alert.task.delivery_date);
     const Icon = dueInfo.icon;
+    
+    // Generar mensaje dinámicamente en español
+    const now = new Date();
+    const dueDate = new Date(alert.task.delivery_date);
+    const diffInDays = Math.ceil((dueDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    
+    let dynamicMessage = '';
+    if (diffInDays < 0) {
+      dynamicMessage = `La tarea "${alert.task.title}" venció hace ${Math.abs(diffInDays)} ${Math.abs(diffInDays) === 1 ? 'día' : 'días'}.`;
+    } else if (diffInDays === 0) {
+      dynamicMessage = `La tarea "${alert.task.title}" vence hoy.`;
+    } else {
+      dynamicMessage = `La tarea "${alert.task.title}" vence en ${diffInDays} ${diffInDays === 1 ? 'día' : 'días'}.`;
+    }
 
     return (
       <div className="p-3 hover:bg-muted/50 transition-colors border-b last:border-b-0">
@@ -69,7 +86,7 @@ export function NotificationBell() {
               {alert.task.title}
             </p>
             <p className="text-xs text-muted-foreground mt-1">
-              {alert.message}
+              {dynamicMessage}
             </p>
             <div className="flex items-center gap-3 mt-2">
               {alert.task.subject && (
