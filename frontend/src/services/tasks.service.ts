@@ -23,6 +23,7 @@ export interface Task {
   task_id: string;
   title: string;
   description: string;
+  notes?: string;
   start_date: string;
   delivery_date: string;
   priority: TaskPriority;
@@ -39,6 +40,7 @@ export interface CreateTaskDto {
   subjectId: string;
   title: string;
   description: string;
+  notes?: string;
   start_date: string;
   delivery_date: string;
   priority: TaskPriority;

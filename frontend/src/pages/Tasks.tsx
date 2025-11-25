@@ -12,10 +12,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Calendar, AlertCircle, Pencil, Trash2, CheckCircle2, Clock, Filter, X } from "lucide-react";
+import { Plus, Calendar, AlertCircle, Pencil, Trash2, CheckCircle2, Clock, Filter, X, Eye } from "lucide-react";
 import { useTasks, useCreateTask, useUpdateTask, useDeleteTask } from "@/hooks/useTasks";
 import { useSubjects } from "@/hooks/useSubjects";
 import { TaskForm } from "@/components/TaskForm";
+import { TaskDetailDialog } from "@/components/TaskDetailDialog";
 import type { Task, CreateTaskDto, TaskState } from "@/services/tasks.service";
 import { TaskState as TaskStateEnum, TaskPriority as TaskPriorityEnum } from "@/services/tasks.service";
 import {
@@ -37,6 +38,8 @@ export default function Tasks() {
   const [taskToDelete, setTaskToDelete] = useState<string | null>(null);
   const [currentTab, setCurrentTab] = useState<string>("all");
   const [selectedSubjectId, setSelectedSubjectId] = useState<string>("all");
+  const [detailDialogOpen, setDetailDialogOpen] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
   const { data: tasks = [], isLoading } = useTasks();
   const { data: subjects = [] } = useSubjects();
@@ -122,6 +125,11 @@ export default function Tasks() {
     setDeleteDialogOpen(true);
   };
 
+  const openDetailDialog = (task: Task) => {
+    setSelectedTask(task);
+    setDetailDialogOpen(true);
+  };
+
   const closeForm = () => {
     setFormOpen(false);
     setEditingTask(undefined);
@@ -183,9 +191,10 @@ export default function Tasks() {
             <div className="flex-1 space-y-2">
               <div className="flex items-start justify-between gap-2">
                 <h3
-                  className={`font-semibold text-foreground ${
+                  className={`font-semibold text-foreground cursor-pointer hover:text-primary ${
                     isCompleted ? "line-through text-muted-foreground" : ""
                   }`}
+                  onClick={() => openDetailDialog(task)}
                 >
                   {task.title}
                 </h3>
@@ -205,7 +214,17 @@ export default function Tasks() {
                       variant="ghost"
                       size="icon"
                       className="h-7 w-7"
+                      onClick={() => openDetailDialog(task)}
+                      title="Ver detalles"
+                    >
+                      <Eye className="w-3.5 h-3.5" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7"
                       onClick={() => openEditForm(task)}
+                      title="Editar"
                     >
                       <Pencil className="w-3.5 h-3.5" />
                     </Button>
@@ -214,6 +233,7 @@ export default function Tasks() {
                       size="icon"
                       className="h-7 w-7 text-destructive"
                       onClick={() => openDeleteDialog(task.task_id)}
+                      title="Eliminar"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </Button>
@@ -398,6 +418,13 @@ export default function Tasks() {
         onSubmit={editingTask ? handleUpdate : handleCreate}
         task={editingTask}
         isLoading={createTask.isPending || updateTask.isPending}
+      />
+
+      {/* Dialog de detalles */}
+      <TaskDetailDialog
+        open={detailDialogOpen}
+        onOpenChange={setDetailDialogOpen}
+        task={selectedTask}
       />
 
       {/* Dialog de confirmación para eliminar */}

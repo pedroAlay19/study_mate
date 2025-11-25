@@ -4,9 +4,13 @@ import { AttachmentsService } from './attachments.service';
 import { AttachmentsController } from './attachments.controller';
 import { Attachment } from './entities/attachment.entity';
 import { Task } from '../tasks/entities/task.entity';
+import { SupabaseModule } from '../supabase/supabase.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Attachment, Task])],
+  imports: [
+    TypeOrmModule.forFeature([Attachment, Task]),
+    SupabaseModule,
+  ],
   controllers: [AttachmentsController],
   providers: [AttachmentsService],
 })

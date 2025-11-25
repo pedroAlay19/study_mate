@@ -44,6 +44,7 @@ export function TaskForm({ open, onOpenChange, onSubmit, task, isLoading }: Task
     defaultValues: {
       title: "",
       description: "",
+      notes: "",
       subjectId: "",
       start_date: "",
       delivery_date: "",
@@ -63,6 +64,7 @@ export function TaskForm({ open, onOpenChange, onSubmit, task, isLoading }: Task
         reset({
           title: task.title,
           description: task.description,
+          notes: task.notes || "",
           subjectId: task.subjectId || task.subject?.subjectId || "",
           start_date: task.start_date.split('T')[0],
           delivery_date: task.delivery_date.split('T')[0],
@@ -74,6 +76,7 @@ export function TaskForm({ open, onOpenChange, onSubmit, task, isLoading }: Task
         reset({
           title: "",
           description: "",
+          notes: "",
           subjectId: "",
           start_date: new Date().toISOString().split('T')[0],
           delivery_date: new Date().toISOString().split('T')[0],
@@ -141,6 +144,19 @@ export function TaskForm({ open, onOpenChange, onSubmit, task, isLoading }: Task
             {errors.description && (
               <p className="text-sm text-destructive">{errors.description.message}</p>
             )}
+          </div>
+
+          {/* Notas/Comentarios */}
+          <div className="space-y-2">
+            <Label htmlFor="notes">
+              Notas / Comentarios <span className="text-muted-foreground text-xs">(Opcional)</span>
+            </Label>
+            <Textarea
+              id="notes"
+              {...register("notes")}
+              placeholder="Agrega notas o comentarios adicionales sobre esta tarea..."
+              rows={3}
+            />
           </div>
 
           {/* Materia */}
