@@ -2,13 +2,13 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { join } from 'path';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   
   app.enableCors({
     origin: [
+      'https://studymate-frontend-app-cgh9hge2csdbhkeb.canadacentral-01.azurewebsites.net',
       'https://studymate-front-275736197450.northamerica-south1.run.app',
       'http://localhost:5173',
       'http://localhost:4173',
