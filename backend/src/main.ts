@@ -5,24 +5,41 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
-  
+
+  // 🔥 CORS FORZADO PARA AZURE (preflight)
+  app.use((req, res, next) => {
+    res.header(
+      'Access-Control-Allow-Origin',
+      'https://studymate-frontend-app-cgh9hge2csdbhkeb.canadacentral-01.azurewebsites.net'
+    );
+    res.header(
+      'Access-Control-Allow-Methods',
+      'GET,POST,PUT,PATCH,DELETE,OPTIONS'
+    );
+    res.header(
+      'Access-Control-Allow-Headers',
+      'Content-Type, Authorization'
+    );
+    res.header('Access-Control-Allow-Credentials', 'true');
+
+    if (req.method === 'OPTIONS') {
+      return res.sendStatus(204);
+    }
+
+    next();
+  });
+
+  // ✅ CORS estándar (solo un origin)
   app.enableCors({
-    origin: [
+    origin:
       'https://studymate-frontend-app-cgh9hge2csdbhkeb.canadacentral-01.azurewebsites.net',
-      'https://studymate-front-275736197450.northamerica-south1.run.app',
-      'http://localhost:5173',
-      'http://localhost:4173',
-      'http://localhost:5174',
-      'https://*.run.app',
-    ],
     credentials: true,
   });
 
   app.useGlobalPipes(new ValidationPipe());
 
-  // Puerto para Cloud Run
   const port = process.env.PORT || 8080;
-  await app.listen(port, '0.0.0.0');   
+  await app.listen(port, '0.0.0.0');
   console.log(`Server running on port ${port}`);
 }
 
