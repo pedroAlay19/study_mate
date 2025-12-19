@@ -61,43 +61,8 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  deploy-to-azure:
-    needs: build-and-push
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/azure'
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Azure Login
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-      - name: Deploy Backend to Container Instances (or App Service)
-        uses: azure/container-instances-deploy-action@v1
-        with:
-          resource-group: ${{ secrets.AZURE_RESOURCE_GROUP }}
-          name: studymate-backend
-          image: ${{ env.REGISTRY }}/${{ env.BACKEND_IMAGE_NAME }}:${{ github.sha }}
-          registry-login-server: ${{ env.REGISTRY }}
-          registry-username: ${{ secrets.AZURE_REGISTRY_USERNAME }}
-          registry-password: ${{ secrets.AZURE_REGISTRY_PASSWORD }}
-          environment-variables:
-            DATABASE_URL=${{ secrets.DATABASE_URL }}
-            JWT_SECRET=${{ secrets.JWT_SECRET }}
-            NODE_ENV=production
-          cpu: 1
-          memory: 2
-          ports: 8080
-
-      - name: Deploy Frontend to Container Instances (or App Service)
-        uses: azure/container-instances-deploy-action@v1
-        with:
-          resource-group: ${{ secrets.AZURE_RESOURCE_GROUP }}
-          name: studymate-frontend
-          image: ${{ env.REGISTRY }}/${{ env.FRONTEND_IMAGE_NAME }}:${{ github.sha }}
+  # Azure App Services detectará automáticamente las nuevas imágenes
+  # gracias al Continuous Deployment configurado en el Paso 10
           registry-login-server: ${{ env.REGISTRY }}
           registry-username: ${{ secrets.AZURE_REGISTRY_USERNAME }}
           registry-password: ${{ secrets.AZURE_REGISTRY_PASSWORD }}
