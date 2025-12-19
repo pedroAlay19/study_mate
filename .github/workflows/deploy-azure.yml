@@ -61,14 +61,5 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  # Azure App Services detectará automáticamente las nuevas imágenes
-  # gracias al Continuous Deployment configurado en el Paso 10
-          registry-login-server: ${{ env.REGISTRY }}
-          registry-username: ${{ secrets.AZURE_REGISTRY_USERNAME }}
-          registry-password: ${{ secrets.AZURE_REGISTRY_PASSWORD }}
-          cpu: 1
-          memory: 1
-          ports: 8080
-
-      - name: Logout from Azure
-        run: az logout
+# Azure App Services detectará automáticamente las nuevas imágenes
+# gracias al Continuous Deployment configurado en el Paso 10
