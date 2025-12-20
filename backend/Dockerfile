@@ -25,8 +25,8 @@ COPY --from=builder --chown=nestjs:nodejs /app/package*.json ./
 RUN mkdir -p uploads && chown nestjs:nodejs uploads
 
 ENV NODE_ENV=production
-ENV PORT=80
-EXPOSE 80
+ENV PORT=8080
+EXPOSE 8080
 
 USER nestjs
 
